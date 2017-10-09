@@ -201,6 +201,10 @@ namespace {
 			out.disable();
 
 		if (file_utils::get_file_length(path) < persistent_data::MD_BLOCK_SIZE) {
+			if (check_for_xml(bm)) {
+				out << "This looks like XML.  thin_check only checks the binary metadata format." << end_message();
+				return FATAL;
+			}
 			out << "Metadata device/file too small.  Is this binary metadata?"
 			    << end_message();
 			return FATAL;
@@ -218,11 +222,8 @@ namespace {
 			check_superblock(bm, sb_rep);
 		}
 
-		if (sb_rep.get_error() == FATAL) {
-			if (check_for_xml(bm))
-				out << "This looks like XML.  thin_check only checks the binary metadata format." << end_message();
+		if (sb_rep.get_error() == FATAL)
 			return FATAL;
-		}
 
 		superblock_detail::superblock sb = read_superblock(bm);
 		transaction_manager::ptr tm =
